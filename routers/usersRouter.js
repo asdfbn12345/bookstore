@@ -1,5 +1,26 @@
 const express = require("express");
+const {
+  signUpValidators,
+  loginValidators,
+  requestResetValidators,
+  resetValidators,
+} = require("../validations/userValidators");
+const {
+  signUp,
+  login,
+  reset,
+  requestReset,
+} = require("../controllers/users/userController");
 
-const usersRouter = express.Router();
+const router = express.Router();
 
-module.exports = usersRouter;
+module.exports = router;
+
+router.route("/sign-up").post(signUpValidators, signUp);
+
+router.route("/login").get(loginValidators, login);
+
+router
+  .route("/reset")
+  .post(requestResetValidators, requestReset)
+  .put(resetValidators, reset);
