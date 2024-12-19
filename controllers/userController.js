@@ -2,7 +2,7 @@ require("dotenv").config();
 const conn = require("../databases/mariadb");
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
-const { encodePasswordHash } = require("../../cryptos/passwordHash");
+const { encodePasswordHash } = require("../cryptos/passwordHash");
 
 module.exports = {
   signUp,
@@ -11,7 +11,7 @@ module.exports = {
   reset,
 };
 
-const signUp = (req, res) => {
+function signUp(req, res) {
   const { email, password } = req.body;
   const { salt, passwordHash } = encodePasswordHash(password);
 
@@ -19,7 +19,7 @@ const signUp = (req, res) => {
   const values = [email, salt, passwordHash];
 
   conn.query(sql, values, (err, result) => {
-    if (err !== undefined) {
+    if (err !== null) {
       console.log(err);
       res.status(StatusCodes.BAD_REQUEST).end();
       return;
@@ -27,9 +27,9 @@ const signUp = (req, res) => {
 
     res.status(StatusCodes.CREATED).json(result);
   });
-};
+}
 
-const login = (req, res) => {
+function login(req, res) {
   const { email, password } = req.body;
 
   const sql = `SELECT * INTO users WHERE email=?`;
@@ -38,7 +38,7 @@ const login = (req, res) => {
   conn.query(sql, values, (err, result) => {
     const user = result[0];
 
-    if (err !== undefined || user === undefined) {
+    if (err !== null || user === undefined) {
       console.log(err);
       res.status(StatusCodes.UNAUTHORIZED).end();
       return;
@@ -70,9 +70,9 @@ const login = (req, res) => {
 
     res.status(StatusCodes.OK).json(result);
   });
-};
+}
 
-const requestReset = (req, res) => {
+function requestReset(req, res) {
   const { email } = req.body;
 
   const sql = `SELECT * INTO users WHERE email=?`;
@@ -81,7 +81,7 @@ const requestReset = (req, res) => {
   conn.query(sql, values, (err, result) => {
     const user = result[0];
 
-    if (err !== undefined || user === undefined) {
+    if (err !== null || user === undefined) {
       console.log(err);
       res.status(StatusCodes.UNAUTHORIZED).end();
       return;
@@ -94,9 +94,9 @@ const requestReset = (req, res) => {
       })
       .end();
   });
-};
+}
 
-const reset = (req, res) => {
+function reset(req, res) {
   const { email, password } = req.body;
 
   const { salt, passwordHash } = getPasswordHash(password);
@@ -104,9 +104,7 @@ const reset = (req, res) => {
   const values = [salt, passwordHash, email];
 
   conn.query(sql, values, (err, result) => {
-    const user = result[0];
-
-    if (err !== undefined || user === undefined) {
+    if (err !== null) {
       console.log(err);
       res.status(StatusCodes.UNAUTHORIZED).end();
       return;
@@ -119,4 +117,4 @@ const reset = (req, res) => {
 
     res.status(StatusCodes.OK).end();
   });
-};
+}

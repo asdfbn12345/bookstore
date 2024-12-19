@@ -10,7 +10,7 @@ const {
   login,
   reset,
   requestReset,
-} = require("../controllers/users/userController");
+} = require("../controllers/userController");
 
 const router = express.Router();
 
