@@ -4,15 +4,54 @@ CREATE DATABASE bookstore;
 
 USE bookstore;
 
+CREATE OR REPLACE TABLE shipping_information (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    address VARCHAR(300) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    contact VARCHAR(15),
+    PRIMARY KEY (id)
+)
+
 CREATE
 OR
 REPLACE
 TABLE users (
-    id INT NOT NULL AUTO_INCREMENT,
+    id INTEGER NOT NULL AUTO_INCREMENT,
     email VARCHAR(320),
     salt VARCHAR(64),
     password VARCHAR(64),
+    shipping_information_id INTEGER,
+    PRIMARY KEY (id),
+    FOREIGN KEY (shipping_information_id) REFERENCES shipping_information (id)
+);
+
+CREATE OR REPLACE TABLE deliveries (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    order_id INTEGER NOT NULL,
+    shipping_information_id INTEGER NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY (shipping_information_id) REFERENCES shipping_information (id)
+)
+
+CREATE OR REPLACE TABLE orders (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    user_id INTEGER NOT NULL,
+    delivery_id INTEGER NOT NULL,
+    created_at DATE NOT NULL,
+    total_count INTEGER NOT NULL,
+    total_price INTEGER NOT NULL,
     PRIMARY KEY (id)
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (delivery_id) REFERENCES deliveries (id)
+);
+
+ALTER TABLE deliveries ADD FOREIGN KEY order_id REFERENCES shipping_information (id);
+
+CREATE OR REPLACE TABLE likes (
+    user_id INTEGER NOT NULL,
+    book_id INTEGER NOT NULL,
+    FOREIGN KEY user_id REFERENCES users (id),
+    FOREIGN KEY book_id REFERENCES books (id)
 );
 
 CREATE
@@ -44,9 +83,3 @@ TABLE books (
     PRIMARY KEY (id),
     FOREIGN KEY (category_id) REFERENCES categories (id)
 );
-
-INSERT INTO categories (id, name) VALUES (1, "동화");
-
-INSERT INTO categories (id, name) VALUES (2, "소설");
-
-INSERT INTO categories (id, name) VALUES (3, "사회");

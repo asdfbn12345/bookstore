@@ -7,11 +7,16 @@ module.exports = {
   getBookDetail,
 };
 
-function getBooks(req, res) {
-  const { category_id, newly, likes, limit, page } = req.query;
+async function getBooks(req, res) {
+  const { categoryId, newly, likes, limit, page } = req.query;
 
-  const sql = `SELECT * FROM books JOIN categories ON books.category_id=categories.id WHERE category_id=?`;
-  const values = [category_id];
+  const likesSubQuery = `(SELECT COUNT(*) FROM likes WHERE c.book_id = b.id) AS likes`;
+  const join = `JOIN categories c ON b.category_id = c.id`;
+  const sql = `SELECT b.*, c.name as category_name, ${likesSubQuery}
+    FROM books b
+    ${join}
+    WHERE b.category_id = ?`;
+  const values = [categoryId];
 
   if (newly !== undefined) {
     sql += ` AND newly < CURDATE() - INTERVAL ${NEWLY_MONTH} MONTH`;
@@ -34,15 +39,11 @@ function getBooks(req, res) {
 
   sql += ` LIMIT ${limit} OFFSET ${page - 1}`;
 
-  conn.query(sql, values, (err, result) => {
+  try {
+    const [result] = await conn.query(sql, values);
     const books = result;
 
-    if (err !== null) {
-      res.status(StatusCodes.BAD_REQUEST).end();
-      return;
-    }
-
-    if (book.length === 0) {
+    if (books.length === 0) {
       res.status(StatusCodes.NOT_FOUND).end();
       return;
     }
@@ -52,25 +53,34 @@ function getBooks(req, res) {
     };
 
     res.status(StatusCodes.OK).json(booksObject).end();
-  });
+  } catch (error) {
+    res.status(StatusCodes.BAD_REQUEST).end();
+    return;
+  }
 }
 
-function getBookDetail(req, res) {
-  const { id } = req.params;
+async function getBookDetail(req, res) {
+  const { bookId } = req.params;
+  const { userId } = req.body;
 
-  const sql = `SELECT FROM books JOIN categories ON books.category_id=categories.id WHERE id=?`;
-  const values = [id];
+  const likesSubQuery = `(SELECT COUNT(*) FROM likes WHERE c.book_id = b.id) AS likes`;
+  const likedSubQuery =
+    userId === undefined
+      ? ""
+      : `, SELECT EXISTS(SELECT * FROM likes WHERE c.book_id = b.id AND user_id = ${userId}) AS liked`;
+  const join = `JOIN categories c ON b.category_id = c.id`;
+  const sql = `SELECT b.*, c.name AS category_name ${likesSubQuery} ${likedSubQuery} FROM books b ${join} WHERE b.id = ?`;
+  const values = [bookId];
 
-  conn.query(sql, values, (err, result) => {
-    if (err !== null) {
-      res.status(StatusCodes.BAD_REQUEST).end();
-      return;
-    }
-
+  try {
+    const [result] = await conn.query(sql, values);
     const bookObject = {
       book: result,
     };
 
     res.status(StatusCodes.OK).json(bookObject).end();
-  });
+  } catch (error) {
+    res.status(StatusCodes.BAD_REQUEST).end();
+    return;
+  }
 }

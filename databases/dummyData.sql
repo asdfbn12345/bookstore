@@ -1,3 +1,13 @@
+INSERT INTO users (email, salt, password) VALUES ("tgf@asdf.com", "123", "123");
+INSERT INTO users (email, salt, password) VALUES ("@asdf.com", "123", "123");
+INSERT INTO users (email, salt, password) VALUES ("tgf@asdf.com", "123", "123");
+INSERT INTO users (email, salt, password) VALUES ("tgf@asdf.com", "123", "123");
+
+INSERT INTO categories (id, name) VALUES (1, "동화");
+INSERT INTO categories (id, name) VALUES (2, "소설");
+INSERT INTO categories (id, name) VALUES (3, "사회");
+
+
 INSERT INTO
     books (
         isbn,

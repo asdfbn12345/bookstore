@@ -4,7 +4,7 @@ const { getBookDetail, getBooks } = require("../controllers/bookController");
 
 const router = express.Router();
 
-module.exports = booksRouter;
+module.exports = router;
 
 router.route("/").get(getBooksValidators, getBooks);
 router.route("/:id").get(getBookDetail);

@@ -5,15 +5,11 @@ module.exports = {
   getAllCategories,
 };
 
-function getAllCategories(req, res) {
+async function getAllCategories(req, res) {
   const sql = `SELECT * FROM categories`;
-
-  conn.query(sql, (err, result) => {
+  try {
+    const [result] = await conn.query(sql);
     const categories = result;
-    if (err !== null) {
-      res.status(StatusCodes.NOT_FOUND).end();
-      return;
-    }
 
     if (categories.length === 0) {
       res.status(StatusCodes.NOT_FOUND).end();
@@ -25,5 +21,8 @@ function getAllCategories(req, res) {
     };
 
     res.status(StatusCodes.OK).json(categoriesObject).end();
-  });
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).end();
+    return;
+  }
 }
